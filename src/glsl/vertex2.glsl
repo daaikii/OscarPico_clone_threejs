@@ -37,16 +37,13 @@ void main(){
 
 
 
-  //回転先1の位置の作成
-  //90度回転
+  //90度回転先1の位置の作成
   vec3 rotPos1 = rotate(newPos,vec3(1.0,0.0,0.0),-PI/2.);
   //回転先1へ移動
   newPos+=normalize(rotPos1-newPos)*length(rotPos1-newPos)*smoothstep(1.0,2.0,uProgress);
-
-  //回転先2の位置の作成
-  //90度回転
+  //もう90度
   vec3 rotPos2 = rotate(newPos,vec3(1.0,0.0,0.0),-PI/2.);
-  //回転先2へ移動
+  //移動
   newPos+=normalize(rotPos2-newPos)*length(rotPos2-newPos)*smoothstep(2.0,3.0,uProgress);
 
 

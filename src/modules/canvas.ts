@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import GUI from "lil-gui";
-import { OrbitControls } from "three/examples/jsm/Addons.js";
+import { gsap } from "gsap";
 
 
 import img1 from "/image1.jpg";
@@ -25,13 +25,16 @@ export default class Canvas {
   private canvas: HTMLCanvasElement | null;
   private scene: THREE.Scene;
 
+  private indices: number[]
+  private uMouseWheel: number
+
   private settings: {};
   private gui: GUI;
 
   private images: string[];
   private textures: THREE.Texture[]
   private meshes: THREE.Mesh[];
-  private mainMeshes: FourthMesh[]
+  private mainMesh: FourthMesh;
 
   private size: { width: number; height: number };
   private aspectRatio: number;
@@ -39,7 +42,6 @@ export default class Canvas {
   private fov: number;
   private camera: THREE.PerspectiveCamera;
   private renderer: THREE.WebGLRenderer;
-  private orbitControls: OrbitControls;
 
   constructor() {
     this.canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -47,14 +49,14 @@ export default class Canvas {
     this.images = [img1, img2, img3, img4];
     this.textures = [];
     this.meshes = [];
-    this.mainMeshes = [];
 
     this.setDimension();
-    this.setTextures()
-    this.setGUI();
+    this.setTextures();
     this.setupRenderer();
     this.resize();
     this.createMesh();
+    // this.setGUI();
+    this.addEventListener()
     this.animate();
   }
 
@@ -67,12 +69,59 @@ export default class Canvas {
   }
 
 
-  private mouseWheelEvent() {
-    document.addEventListener("mousewheel", (event: WheelEvent) => {
-      for (let i = 0; i < this.mainMeshes.length; i++) {
-        this.mainMeshes[i].material.uniforms.uMouseWheel.value = event.deltaY / 500;
-      }
-    })
+  //メインメッシュでのみ使用するイベント
+  private addEventListener() {
+    this.indices = [0, 1, 2, 3]
+    this.uMouseWheel = 0;
+    document.addEventListener("wheel", this.mouseWheelEvent.bind(this))
+  }
+
+  private removeWheelEventListener() {
+    document.removeEventListener("wheel", this.mouseWheelEvent);
+  }
+
+  private addWheelEventListener() {
+    document.addEventListener("wheel", this.mouseWheelEvent);
+  }
+
+  private mouseWheelEvent(event) {
+    const mainMeshUni = this.mainMesh.material.uniforms
+    this.uMouseWheel += event.deltaY / 2000;
+
+
+    if (this.uMouseWheel < -1) {
+      this.removeWheelEventListener()
+      this.indices.unshift(this.indices.pop()!) //前のテクスチャを用意
+
+      mainMeshUni.uTexture2.value = this.textures[this.indices[0]];  //アニメーション[前]  テクスチャ2をセット 
+
+      //アニメーション
+      gsap.to(mainMeshUni.uProgress, {
+        value: 1, duration: 2, onComplete: () => {
+          mainMeshUni.uTexture.value = mainMeshUni.uTexture2.value; //アニメーション[後]  テクスチャ2をテクスチャ1に変更
+          mainMeshUni.uProgress.value = 0;  //進行をリセット
+        }
+      });
+      this.uMouseWheel = 0;  //リセット
+    }
+
+    if (this.uMouseWheel > 1) {
+      this.removeWheelEventListener()
+      this.indices.push(this.indices.shift()!)  //次のテクスチャを用意
+      mainMeshUni.uTexture2.value = this.textures[this.indices[0]] //アニメーション[前]  テクスチャ2をセット
+
+      //アニメーション
+      gsap.to(mainMeshUni.uProgress, {
+        value: 1, duration: 2, onComplete: () => {
+          mainMeshUni.uTexture.value = mainMeshUni.uTexture2.value; //アニメーション[後]  テクスチャ2をテクスチャ1に変更
+          mainMeshUni.uProgress.value = 0;  //進行をリセット
+        }
+      });
+      this.uMouseWheel = 0;  //リセット
+    }
+
+    mainMeshUni.uMouseWheel.value = this.uMouseWheel;
+
   }
 
 
@@ -85,6 +134,7 @@ export default class Canvas {
   }
 
 
+  // SET TEXTURE
   private setTextures(): void {
     const loader = new THREE.TextureLoader();
     for (let i = 0; i < this.images.length; i++) {
@@ -94,6 +144,7 @@ export default class Canvas {
   }
 
 
+  // REMOVE MESHES
   private removeEntity(object) {
     var selectedObject = this.scene.getObjectByName(object.name);
     if (!selectedObject) return //メッシュにnameを設定しているものだけ削除
@@ -101,26 +152,30 @@ export default class Canvas {
   }
 
 
-  private setGUI(): void {
-    this.settings = {
-      progress: 0
-    }
-    this.gui = new GUI()
-    this.gui.add(this.settings, "progress", 0, 5.1, 0.01).onChange((value: number) => {
-      for (let i = 0; i < this.meshes.length; i++) {
-        if (!this.meshes[i].material) return
-        this.meshes[i].material.uniforms.uProgress.value = value;
+  // GUI SETTINGS
+  // private setGUI(): void {
+  //   this.settings = {
+  //     progress: 0
+  //   }
+  //   this.gui = new GUI()
+  //   this.gui.add(this.settings, "progress", 0, 5.1, 0.01).onChange((value: number) => {
+  //     for (let i = 0; i < this.meshes.length; i++) {
+  //       if (!this.meshes[i].material) return
+  //       this.meshes[i].material.uniforms.uProgress.value = value;
 
-        if (value > 5.0) {
-          for (let i = 0; i < this.meshes.length; i++) {
-            this.removeEntity(this.meshes[i])
-          }
-        }
-      }
-    })
-  }
+  //       //5.0以降に1～3meshを削除+mainMeshを表示
+  //       if (value > 5.0) {
+  //         for (let i = 0; i < this.meshes.length; i++) {
+  //           this.removeEntity(this.meshes[i])
+  //           this.mainMesh.material.uniforms.uDisplay.value = 1.0;
+  //         }
+  //       }
+  //     }
+  //   })
+  // }
 
 
+  //RENDERER
   private setupRenderer(): void {
     this.perspective = 7;
     this.fov = 50;
@@ -135,11 +190,10 @@ export default class Canvas {
     });
     this.renderer.setSize(this.size.width, this.size.height);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-    this.orbitControls = new OrbitControls(this.camera, this.renderer.domElement);
   }
 
 
+  //RESIZE
   private resize(): void {
     window.addEventListener("resize", () => {
       this.setDimension();
@@ -152,37 +206,49 @@ export default class Canvas {
   }
 
 
+  //CREATE MESHES
   private createMesh(): void {
     for (let i = 0; i < this.images.length; i++) {
-      //拡大する最初の4つのメッシュ
-      const mesh = new FirstMesh(this.textures[i], i);
+      const mesh = new FirstMesh(this.textures[i], i);  //拡大する最初の4つのメッシュ
       this.scene.add(mesh.mesh)
       this.meshes.push(mesh.mesh);
-
-      //
-      const mesh4 = new FourthMesh(this.textures[i])
-      const closeZ = 1.0 / Math.tan((this.camera.fov / 2.0) * Math.PI / 180.0);
-      mesh4.material.uniforms.uZMax = new THREE.Uniform(this.camera.position.z - closeZ);
-      this.scene.add(mesh4.mesh)
-      this.meshes.push(mesh4.mesh)
-      this.mainMeshes.push(mesh4)
     }
 
-    //回転して表示されるメッシュ
-    const mesh2 = new SecondMesh(this.textures[1], Math.PI / 2);
-    //2×2から画面サイズに拡大されるメッシュ
-    const mesh3 = new ThirdMesh(this.textures[0], Math.PI);
-    const closeZ = 1.0 / Math.tan((this.camera.fov / 2.0) * Math.PI / 180.0);
-    mesh3.material.uniforms.uZMax = new THREE.Uniform(this.camera.position.z - closeZ);
+    const mesh2 = new SecondMesh(this.textures[1], Math.PI / 2);  //回転して表示されるメッシュ
+
+    const mesh3 = new ThirdMesh(this.textures[0], Math.PI); //2×2から画面サイズに拡大されるメッシュ
+    const closeZ = 1.0 / Math.tan((this.camera.fov / 2.0) * Math.PI / 180.0); //画面サイズに拡大するため
+    const uZMax = new THREE.Uniform(this.camera.position.z - closeZ);
+    mesh3.material.uniforms.uZMax = uZMax;
 
     this.scene.add(mesh2.mesh, mesh3.mesh)
     this.meshes.push(mesh2.mesh, mesh3.mesh)
+
+    const mesh4 = new FourthMesh(this.textures[0], this.textures[1])  //メインのメッシュ
+    mesh4.material.uniforms.uZMax = uZMax;
+    this.scene.add(mesh4.mesh)
+    this.mainMesh = mesh4
   }
 
-
+  progress = 0;
+  clock = new THREE.Clock()
+  // ANIMATION
   private animate(): void {
     this.renderer.render(this.scene, this.camera);
     requestAnimationFrame(this.animate.bind(this));
+    for (let i = 0; i < this.meshes.length; i++) {
+      if (!this.meshes[i].material) return
+      this.meshes[i].material.uniforms.uProgress.value = this.progress;
+
+      //5.0以降に1～3meshを削除+mainMeshを表示
+      if (this.progress > 5.0) {
+        for (let i = 0; i < this.meshes.length; i++) {
+          this.removeEntity(this.meshes[i])
+          this.mainMesh.material.uniforms.uDisplay.value = 1.0;
+        }
+      }
+    }
+    this.progress += this.clock.getElapsedTime() / 1000;
   }
 }
 
@@ -305,12 +371,14 @@ class ThirdMesh {
 /*FourthMesh------------------------------------------------------------------ */
 class FourthMesh {
   private texture: THREE.Texture;
+  private texture2: THREE.Texture;
   public geometry: THREE.PlaneGeometry;
   public material: THREE.ShaderMaterial;
   public mesh: THREE.Mesh;
 
-  constructor(texture: THREE.Texture) {
+  constructor(texture: THREE.Texture, texture2: THREE.Texture) {
     this.texture = texture;
+    this.texture2 = texture2;
 
     this.createMesh();
   }
@@ -322,11 +390,14 @@ class FourthMesh {
       fragmentShader: fragment4,
       uniforms: {
         uTexture: { value: this.texture },
+        uTexture2: { value: this.texture2 },
         uProgress: { value: 0 },
         uAspect: { value: new THREE.Vector2(window.innerWidth / window.innerHeight, 1) },
         uZMax: { value: 0 },
-        uMouseWheel: { value: 0 }
-      }
+        uMouseWheel: { value: 0 },
+        uDisplay: { value: 0 }
+      },
+      transparent: true
     });
     this.mesh = new THREE.Mesh(this.geometry, this.material);
   }

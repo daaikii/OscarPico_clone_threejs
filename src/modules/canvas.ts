@@ -71,9 +71,10 @@ export default class Canvas {
 
   //メインメッシュでのみ使用するイベント
   private addEventListener() {
-    this.indices = [0, 1, 2, 3]
+    this.indices = [0, 1, 2, 3];
     this.uMouseWheel = 0;
-    document.addEventListener("wheel", this.mouseWheelEvent.bind(this))
+    this.mouseWheelEvent = this.mouseWheelEvent.bind(this);
+    document.addEventListener("wheel", this.mouseWheelEvent);
   }
 
   private removeWheelEventListener() {
@@ -85,44 +86,49 @@ export default class Canvas {
   }
 
   private mouseWheelEvent(event) {
-    const mainMeshUni = this.mainMesh.material.uniforms
+    const mainMeshUni = this.mainMesh.material.uniforms;
     this.uMouseWheel += event.deltaY / 2000;
 
-
     if (this.uMouseWheel < -1) {
-      this.removeWheelEventListener()
-      this.indices.unshift(this.indices.pop()!) //前のテクスチャを用意
+      this.removeWheelEventListener();
+      this.indices.unshift(this.indices.pop()!); //前のテクスチャを用意
 
-      mainMeshUni.uTexture2.value = this.textures[this.indices[0]];  //アニメーション[前]  テクスチャ2をセット 
+      mainMeshUni.uTexture2.value = this.textures[this.indices[0]]; //アニメーション[前] テクスチャ2をセット
 
       //アニメーション
       gsap.to(mainMeshUni.uProgress, {
-        value: 1, duration: 2, onComplete: () => {
-          mainMeshUni.uTexture.value = mainMeshUni.uTexture2.value; //アニメーション[後]  テクスチャ2をテクスチャ1に変更
-          mainMeshUni.uProgress.value = 0;  //進行をリセット
-        }
+        value: 1,
+        duration: 2,
+        onComplete: () => {
+          mainMeshUni.uTexture.value = mainMeshUni.uTexture2.value; //アニメーション[後] テクスチャ2をテクスチャ1に変更
+          mainMeshUni.uProgress.value = 0; //進行をリセット
+          this.addWheelEventListener();
+        },
       });
-      this.uMouseWheel = 0;  //リセット
+      this.uMouseWheel = 0; //リセット
     }
 
     if (this.uMouseWheel > 1) {
-      this.removeWheelEventListener()
-      this.indices.push(this.indices.shift()!)  //次のテクスチャを用意
-      mainMeshUni.uTexture2.value = this.textures[this.indices[0]] //アニメーション[前]  テクスチャ2をセット
+      this.removeWheelEventListener();
+      this.indices.push(this.indices.shift()!); //次のテクスチャを用意
+      mainMeshUni.uTexture2.value = this.textures[this.indices[0]]; //アニメーション[前] テクスチャ2をセット
 
       //アニメーション
       gsap.to(mainMeshUni.uProgress, {
-        value: 1, duration: 2, onComplete: () => {
-          mainMeshUni.uTexture.value = mainMeshUni.uTexture2.value; //アニメーション[後]  テクスチャ2をテクスチャ1に変更
-          mainMeshUni.uProgress.value = 0;  //進行をリセット
-        }
+        value: 1,
+        duration: 2,
+        onComplete: () => {
+          mainMeshUni.uTexture.value = mainMeshUni.uTexture2.value; //アニメーション[後] テクスチャ2をテクスチャ1に変更
+          mainMeshUni.uProgress.value = 0; //進行をリセット
+          this.addWheelEventListener();
+        },
       });
-      this.uMouseWheel = 0;  //リセット
+      this.uMouseWheel = 0; //リセット
     }
 
     mainMeshUni.uMouseWheel.value = this.uMouseWheel;
-
   }
+
 
 
   private setDimension(): void {

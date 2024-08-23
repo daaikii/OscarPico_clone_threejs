@@ -85,7 +85,7 @@ export default class Canvas {
     document.addEventListener("wheel", this.mouseWheelEvent);
   }
 
-  private mouseWheelEvent(event) {
+  private mouseWheelEvent(event: WheelEvent) {
     const mainMeshUni = this.mainMesh.material.uniforms;
     this.uMouseWheel += event.deltaY / 2000;
 
@@ -151,7 +151,7 @@ export default class Canvas {
 
 
   // REMOVE MESHES
-  private removeEntity(object) {
+  private removeEntity(object: THREE.Mesh) {
     var selectedObject = this.scene.getObjectByName(object.name);
     if (!selectedObject) return //メッシュにnameを設定しているものだけ削除
     this.scene.remove(selectedObject);
@@ -243,8 +243,11 @@ export default class Canvas {
     this.renderer.render(this.scene, this.camera);
     requestAnimationFrame(this.animate.bind(this));
     for (let i = 0; i < this.meshes.length; i++) {
-      if (!this.meshes[i].material) return
-      this.meshes[i].material.uniforms.uProgress.value = this.progress;
+      // 型ガードで ShaderMaterial であることを確認
+      if (this.meshes[i].material instanceof THREE.ShaderMaterial) {
+        const shaderMaterial = this.meshes[i].material as THREE.ShaderMaterial;
+        shaderMaterial.uniforms.uProgress.value = this.progress;
+      }
 
       //5.0以降に1～3meshを削除+mainMeshを表示
       if (this.progress > 5.0) {
@@ -276,10 +279,6 @@ class FirstMesh {
   constructor(texture: THREE.Texture, index: number) {
     this.texture = texture
     this.index = index
-    this.createMesh();
-  }
-
-  private createMesh(): void {
     this.geometry = new THREE.PlaneGeometry(2, 2, 15, 15);
     this.material = new THREE.ShaderMaterial({
       vertexShader: vertex,
@@ -294,9 +293,6 @@ class FirstMesh {
     this.mesh.name = `mesh_${this.index}`
   }
 
-  public update(value: number): void {
-    this.material.uniforms.uProgress.value = value;
-  }
 }
 
 
@@ -311,11 +307,6 @@ class SecondMesh {
   constructor(texture: THREE.Texture, angle: number) {
     this.texture = texture;
     this.angle = angle;
-
-    this.createMesh();
-  }
-
-  private createMesh(): void {
     this.geometry = new THREE.PlaneGeometry(2, 2, 15, 15);
     this.material = new THREE.ShaderMaterial({
       vertexShader: vertex2,
@@ -328,10 +319,6 @@ class SecondMesh {
     });
     this.mesh = new THREE.Mesh(this.geometry, this.material);
     this.mesh.name = `mesh_4`
-  }
-
-  public update(value: number): void {
-    this.material.uniforms.uProgress.value = value;
   }
 }
 
@@ -347,11 +334,6 @@ class ThirdMesh {
   constructor(texture: THREE.Texture, angle: number) {
     this.texture = texture;
     this.angle = angle;
-
-    this.createMesh();
-  }
-
-  private createMesh(): void {
     this.geometry = new THREE.PlaneGeometry(2, 2, 15, 15);
     this.material = new THREE.ShaderMaterial({
       vertexShader: vertex3,
@@ -367,10 +349,6 @@ class ThirdMesh {
     this.mesh = new THREE.Mesh(this.geometry, this.material);
     this.mesh.name = `mesh_5`
   }
-
-  public update(value: number): void {
-    this.material.uniforms.uProgress.value = value;
-  }
 }
 
 
@@ -385,11 +363,6 @@ class FourthMesh {
   constructor(texture: THREE.Texture, texture2: THREE.Texture) {
     this.texture = texture;
     this.texture2 = texture2;
-
-    this.createMesh();
-  }
-
-  private createMesh(): void {
     this.geometry = new THREE.PlaneGeometry(2, 2, 15, 15);
     this.material = new THREE.ShaderMaterial({
       vertexShader: vertex4,
@@ -406,9 +379,5 @@ class FourthMesh {
       transparent: true
     });
     this.mesh = new THREE.Mesh(this.geometry, this.material);
-  }
-
-  public update(value: number): void {
-    this.material.uniforms.uProgress.value = value;
   }
 }

@@ -32,9 +32,9 @@ void main(){
   newPos.y +=1.0;
 
   vec3 rotPos1 = rotate(newPos,vec3(1.0,0.0,0.0),-PI/2.);                                  //90度回転先の位置の作成
-  newPos+=normalize(rotPos1-newPos)*length(rotPos1-newPos)*smoothstep(1.0,2.0,uProgress);  //回転先へ移動
+  newPos+=normalize(rotPos1-newPos)*length(rotPos1-newPos)*smoothstep(3.0,4.0,uProgress);  //回転先へ移動
   vec3 rotPos2 = rotate(newPos,vec3(1.0,0.0,0.0),-PI/2.);                                  //もう90度回転
-  newPos+=normalize(rotPos2-newPos)*length(rotPos2-newPos)*smoothstep(2.0,3.0,uProgress);  //移動
+  newPos+=normalize(rotPos2-newPos)*length(rotPos2-newPos)*smoothstep(4.0,5.0,uProgress);  //移動
 
   vec4 mvPosition = modelViewMatrix*vec4(newPos,1.0);
   gl_Position = projectionMatrix*mvPosition;

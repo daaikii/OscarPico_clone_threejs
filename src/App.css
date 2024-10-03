@@ -40,3 +40,30 @@
 .read-the-docs {
   color: #888;
 }
+
+
+#canvas {
+  z-index:-1;
+  position:fixed;
+}
+
+.main{
+  position:relative;
+  height:100vh;
+}
+
+.meshes{
+  position:absolute;
+  left:50%;
+  bottom:3%;
+  transform: translate(-50%,0);
+  width:1000px;
+  height:200px;
+}
+
+.Annotation{
+  text-align: center;
+  font-size: 50px;
+  line-height: 10vh;
+  margin:0;
+}

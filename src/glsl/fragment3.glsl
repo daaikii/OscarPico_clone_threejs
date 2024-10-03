@@ -10,7 +10,7 @@ void main() {
 
   float aspectRatioX = uAspect.x / uAspect.y;
   if (aspectRatioX > 1.0) {
-    centeredUv.x /= aspectRatioX-(aspectRatioX-1.0)*sqrt(clamp(uProgress,4.0,5.0)-4.0);  // アスペクト比に基づいて横方向をスケール
+    centeredUv.x /= aspectRatioX-(aspectRatioX-1.0)*sqrt(smoothstep(5.0,6.0,uProgress));  // アスペクト比に基づいて横方向をスケール
   }
 
 

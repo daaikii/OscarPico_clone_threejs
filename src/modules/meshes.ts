@@ -94,6 +94,7 @@ export class ThirdMesh {
         uTexture: { value: this.texture },
         uProgress: { value: 0 },
         uAngle: { value: this.angle },
+        uBaseAspect: { value: 1920 / 1080 },
         uAspect: { value: this.aspectRatio },
         uZMax: { value: 0 }
       }
@@ -130,6 +131,7 @@ export class MainMesh {
         uMosaicRatio: { value: 1 },
         uAmplitude: { value: 0 },
         uAspect: { value: this.aspectRatio },
+        uBaseAspect: { value: 1920 / 1080 },
         uZMax: { value: 0 },
         uMouseWheel: { value: 0 },
         uDisplay: { value: 0 },
@@ -152,8 +154,8 @@ export class CursorMesh {
   public material
   public mesh
   public originalX
-  constructor(aspectRatio: number, texture: THREE.Texture, index: number) {
-    this.aspectRatio = aspectRatio
+  constructor(texture: THREE.Texture, index: number) {
+    this.aspectRatio = 1920 / 1080;
     this.texture = texture
     this.index = index
     const geoSize = 0.2;

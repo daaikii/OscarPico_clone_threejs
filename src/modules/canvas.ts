@@ -42,10 +42,16 @@ export default class Canvas {
   private wheelEvent;
   private clickEvent;
   private renderTarget: THREE.WebGLRenderTarget
+  private finalScene: THREE.Scene
+  private finalCamera: THREE.OrthographicCamera
+  private finalMesh;
+  private yellowBoxLine;
+  private meshArea;
   private isHover: boolean;
   private isLoading: boolean;
 
   constructor() {
+    this.meshArea = document.getElementById("meshes")
     this.canvas = document.getElementById("canvas") as HTMLCanvasElement;
     this.scene = new THREE.Scene();
     this.images = [img1, img2, img3, img4];
@@ -236,7 +242,7 @@ export default class Canvas {
 
     //CURSOR MESH
     this.cursorMeshes = this.textures.map((texture, index) => {
-      const cursorMesh = new CursorMesh(this.aspectRatio, texture, index)
+      const cursorMesh = new CursorMesh(texture, index)
       this.finalScene.add(cursorMesh.mesh)
       this.cursorRaycasterMeshes.push(cursorMesh.mesh)
       return cursorMesh
@@ -248,7 +254,7 @@ export default class Canvas {
     this.yellowBoxLine = new THREE.LineSegments(yellowBoxEdge, new THREE.LineBasicMaterial({ color: 0xD7DC05, transparent: true }))
     this.yellowBoxLine.material.opacity = 0;
     this.yellowBoxLine.position.set(0, -0.8, 0)
-    this.cursorMeshes.push({ mesh: this.yellowBoxLine })
+    this.cursorMeshes.push({ mesh: this.yellowBoxLine } as CursorMesh)
     this.finalScene.add(this.yellowBoxLine)
   }
 
@@ -257,7 +263,10 @@ export default class Canvas {
 
 
   //mainMesh変更時
-  private changeMainMeshTexture({ removeEvent, addEvent }) {
+  private changeMainMeshTexture(
+    { removeEvent, addEvent }
+      : { removeEvent: () => void, addEvent: () => void }
+  ) {
     const uniforms = this.mainMesh.material.uniforms
     //クリックイベントの削除
     removeEvent.bind(this)
@@ -339,6 +348,14 @@ export default class Canvas {
       const point = intersects[0].point;
       this.point.copy(point)
     }
+
+    if (!this.isHover) return
+    const intersects2 = this.raycaster.intersectObjects(this.cursorRaycasterMeshes)
+    if (intersects2.length > 0) {
+      this.meshArea?.classList.add("hover")
+      return
+    }
+    this.meshArea?.classList.remove("hover")
   }
 
 
@@ -389,7 +406,6 @@ export default class Canvas {
 
   //要素にホバーしたとき
   public enter() {
-    console.log("hover")
     this.isHover = true;
     if (!this.isLoading) {
       this.yellowBoxLine.material.opacity = 1;
@@ -404,7 +420,6 @@ export default class Canvas {
   }
   //要素を離れたとき
   public leave() {
-    console.log("leave")
     this.isHover = false;
     this.yellowBoxLine.material.opacity = 0;
   }

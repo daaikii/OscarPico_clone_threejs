@@ -5,6 +5,7 @@ uniform float uMosaicRatio;
 uniform float uAmplitude;
 uniform float uDisplay;
 uniform float uAspect;
+uniform float uBaseAspect;
 uniform float uTime;
 varying vec2 vUv;
 
@@ -36,15 +37,24 @@ float hash(vec2 p) {
 
 
 void main() {
+  vec2 newUV = vUv;
+  newUV.x-=0.5;
+  newUV.x /= uBaseAspect;
+  
+  if (uAspect > 1.0) {
+    newUV.x *=uBaseAspect;
+  }
+
+  newUV.x+=0.5;
 
   // モザイクのブロックごとに操作するために、各ブロックの座標を計算
   float mosaicSizeX = 20.0 * uAspect;  // X方向のモザイクブロック数
   float mosaicSizeY = 20.0;            // Y方向のモザイクブロック数
-  vec2 blockUV = vec2(floor(vUv.x * mosaicSizeX) / mosaicSizeX, floor(vUv.y * mosaicSizeY) / mosaicSizeY);
+  vec2 blockUV = vec2(floor(newUV.x * mosaicSizeX) / mosaicSizeX, floor(newUV.y * mosaicSizeY) / mosaicSizeY);
 
   float randomValue = hash(blockUV);
   float blockReturnThreshhold= step(0.5,uMosaicRatio*(0.5+randomValue));
-  vec2 finalUV = mix(blockUV,vUv,blockReturnThreshhold);
+  vec2 finalUV = mix(blockUV,newUV,blockReturnThreshhold);
   
   // 各モザイクブロックの中心座標を計算
   vec2 blockCenterUV = blockUV + vec2(0.5 / mosaicSizeX, 0.5 / mosaicSizeY);
@@ -69,7 +79,7 @@ float wave = sin((distanceFromCenter * waveFrequency - uTime*0.2) * scalingFacto
 
   // エフェクトでtexture1を表示、それまではtexture2を表示
   float effectRadius = smoothstep(0.0, 1.0, uProgress)*2.0;
-  float distanceToCenter = length(vUv - vec2(0.5));
+  float distanceToCenter = length(newUV - vec2(0.5));
   float mixFactor = smoothstep(effectRadius, effectRadius, distanceToCenter);
   vec3 col = mix(texColor2, texColor1, mixFactor);
 

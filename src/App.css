@@ -57,8 +57,11 @@
   left:50%;
   bottom:3%;
   transform: translate(-50%,0);
-  width:1000px;
+  width:50%;
   height:200px;
+}
+#meshes.hover{
+  cursor: pointer;
 }
 
 .Annotation{

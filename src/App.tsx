@@ -14,14 +14,14 @@ function App() {
     <>
       <canvas id="canvas" style={{ width: "100%", height: "100vh" }}></canvas>
       <div className='main'>
-        <h2 className='Annotation'>クローンサイトです</h2>
+        {/* <h2 className='Annotation'>クローンサイトです</h2> */}
         <div className=''>
 
         </div>
         <div
+          id='meshes'
           onMouseEnter={() => canvas && canvas.enter()!}
           onMouseLeave={() => canvas && canvas.leave()!}
-          className='meshes'
         >
         </div>
       </div>

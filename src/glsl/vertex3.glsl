@@ -2,7 +2,7 @@ const float PI = 3.14159265359;
 
 uniform float uProgress;
 uniform float uAngle;
-uniform vec2 uAspect;
+uniform float uAspect;
 uniform float uZMax;
 
 varying vec2 vUv;
@@ -59,7 +59,7 @@ void main(){
   // newPos.z += sin(vUv.y*PI)*0.0*(smoothstep(5.0,5.5,uProgress));  //山なりに変形y
 
   vec3 scaledPosition = position;
-  scaledPosition.xy = position.xy*uAspect;  //テクスチャサイズの作成  x:1.○, y:1を掛ける
+  scaledPosition.xy = vec2(position.x*uAspect,position.y);  //テクスチャサイズの作成  x:1.?? , y:1を掛ける
 float accelProgress = accelDecelProgress(clamp((uProgress - 5.2) / (6.0 - 5.2), 0.0, 1.0));
 
     // z 軸の移動

@@ -52,7 +52,7 @@
   height:100vh;
 }
 
-.meshes{
+#meshes{
   position:absolute;
   left:50%;
   bottom:3%;

@@ -76,13 +76,16 @@ export class SecondMesh {
 export class ThirdMesh {
   private texture: THREE.Texture;
   private angle: number;
+  private aspectRatio: number
+
   public geometry: THREE.PlaneGeometry;
   public material: THREE.ShaderMaterial;
   public mesh: THREE.Mesh;
-
-  constructor(texture: THREE.Texture, angle: number) {
+  constructor(texture: THREE.Texture, angle: number, aspectRatio: number) {
     this.texture = texture;
     this.angle = angle;
+    this.aspectRatio = aspectRatio
+
     this.geometry = new THREE.PlaneGeometry(2, 2, 15, 15);
     this.material = new THREE.ShaderMaterial({
       vertexShader: vertex3,
@@ -91,7 +94,7 @@ export class ThirdMesh {
         uTexture: { value: this.texture },
         uProgress: { value: 0 },
         uAngle: { value: this.angle },
-        uAspect: { value: new THREE.Vector2(window.innerWidth / window.innerHeight, 1) },
+        uAspect: { value: this.aspectRatio },
         uZMax: { value: 0 }
       }
     });
@@ -105,13 +108,17 @@ export class ThirdMesh {
 export class MainMesh {
   private texture: THREE.Texture;
   private texture2: THREE.Texture;
+  private aspectRatio
+
   public geometry: THREE.PlaneGeometry;
   public material: THREE.ShaderMaterial;
   public mesh: THREE.Mesh;
 
-  constructor(texture: THREE.Texture, texture2: THREE.Texture) {
+  constructor(texture: THREE.Texture, texture2: THREE.Texture, aspectRatio: number) {
     this.texture = texture;
     this.texture2 = texture2;
+    this.aspectRatio = aspectRatio
+
     this.geometry = new THREE.PlaneGeometry(2, 2, 15, 15);
     this.material = new THREE.ShaderMaterial({
       vertexShader: mainVert,
@@ -120,10 +127,13 @@ export class MainMesh {
         uTexture: { value: this.texture },
         uTexture2: { value: this.texture2 },
         uProgress: { value: 0 },
-        uAspect: { value: new THREE.Vector2(window.innerWidth / window.innerHeight, 1) },
+        uMosaicRatio: { value: 1 },
+        uAmplitude: { value: 0 },
+        uAspect: { value: this.aspectRatio },
         uZMax: { value: 0 },
         uMouseWheel: { value: 0 },
-        uDisplay: { value: 0 }
+        uDisplay: { value: 0 },
+        uTime: { value: 0 }
       },
       transparent: true
     });
@@ -139,7 +149,7 @@ export class CursorMesh {
   public index
 
   private geometry
-  private material
+  public material
   public mesh
   public originalX
   constructor(aspectRatio: number, texture: THREE.Texture, index: number) {

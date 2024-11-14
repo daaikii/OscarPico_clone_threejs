@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import GUI from "lil-gui";
 import { gsap } from "gsap";
 
 import { FirstMesh, SecondMesh, ThirdMesh, MainMesh, CursorMesh } from "./meshes";
@@ -19,8 +18,6 @@ export default class Canvas {
   private indices: number[]
   private currentScroll: number
 
-  private settings!: {};
-  private gui!: GUI;
 
   private images: string[];
   private textures: THREE.Texture[]

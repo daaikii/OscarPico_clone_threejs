@@ -74,3 +74,9 @@ canvas {
     background-color: #f9f9f9;
   }
 }
+
+.fixed{
+  position:fixed;
+  left:10%;
+  top:10%;
+}

@@ -94,9 +94,7 @@ export class ThirdMesh {
         uTexture: { value: this.texture },
         uProgress: { value: 0 },
         uAngle: { value: this.angle },
-        uBaseAspect: { value: 1920 / 1080 },
         uAspect: { value: this.aspectRatio },
-        uZMax: { value: 0 }
       }
     });
     this.mesh = new THREE.Mesh(this.geometry, this.material);
@@ -131,9 +129,7 @@ export class MainMesh {
         uMosaicRatio: { value: 1 },
         uAmplitude: { value: 0 },
         uAspect: { value: this.aspectRatio },
-        uBaseAspect: { value: 1920 / 1080 },
-        uZMax: { value: 0 },
-        uMouseWheel: { value: 0 },
+        uScroll: { value: 0 },
         uDisplay: { value: 0 },
         uTime: { value: 0 }
       },
@@ -141,42 +137,57 @@ export class MainMesh {
     });
     this.mesh = new THREE.Mesh(this.geometry, this.material);
   }
+
+  public changeAspectRatio(aspect: number) {
+    this.material.uniforms.uAspect.value = aspect;
+  }
 }
 
 
 /* cursorMesh */
 export class CursorMesh {
-  private aspectRatio
   private texture
   public index
 
   private geometry
   public material
   public mesh
-  public originalX
+  public originalX: number = 0;
+  public originalY: number = 0;
+
+  private BASE_ASPECT = 1920 / 1080;
+  private GEO_SIZE: number = 0.2;
+  private MESH_MAX_LENGTH: number = 4;
+  private MARGIN: number = 0.1;
+  private GEO_WIDTH: number = this.GEO_SIZE * this.BASE_ASPECT
+  private TOTAL_WIDTH: number = this.MESH_MAX_LENGTH * this.GEO_WIDTH + (this.MESH_MAX_LENGTH - 1) * this.MARGIN;
+
   constructor(texture: THREE.Texture, index: number) {
-    this.aspectRatio = 1920 / 1080;
     this.texture = texture
     this.index = index
-    const geoSize = 0.2;
 
-    this.geometry = new THREE.PlaneGeometry(geoSize * this.aspectRatio * 0.75, geoSize)
+    this.geometry = new THREE.PlaneGeometry(this.GEO_SIZE, this.GEO_SIZE)
     this.material = new THREE.MeshBasicMaterial({ map: this.texture, transparent: true })
     this.mesh = new THREE.Mesh(this.geometry, this.material)
     this.mesh.position.set(0, 0, 0)
     this.mesh.material.opacity = 0;
-    this.originalX = 0;
-    const MESH_MAX_LENGTH = 4;
-    const MARGIN = 0.05;
-    const geoWidth = geoSize * this.aspectRatio * 0.75
-    const totalWidth = MESH_MAX_LENGTH * geoWidth + (MESH_MAX_LENGTH - 1) * MARGIN;
+    this.mesh.name = `${index}`
 
-    // 各メッシュのx座標を計算
-    this.originalX = (index * (geoWidth + MARGIN)) - totalWidth / 2 + geoWidth / 2;
-
-    this.mesh.position.set(this.originalX, -0.8, 0)
+    this.setOriginalPos()
+    this.mesh.position.set(this.originalX!, this.originalY!, 0)
   }
-  public removeOriginalPosition() {
-    gsap.to(this.mesh.position, { x: this.originalX, y: -0.8, duration: 0.2 * this.index })
+
+  public setOriginalPos() {
+    this.originalX = 0.8;
+    this.originalY = (this.index * (this.GEO_WIDTH + this.MARGIN)) - this.TOTAL_WIDTH / 2 + this.GEO_WIDTH / 2;
+    // // 各メッシュのx座標を計算
+    if (window.innerWidth > 1000) {
+      this.originalX = (this.index * (this.GEO_WIDTH + this.MARGIN)) - this.TOTAL_WIDTH / 2 + this.GEO_WIDTH / 2;
+      this.originalY = -0.8;
+    }
+  }
+
+  public removeOriginalPosition(meshPosition: THREE.Vector3) {
+    gsap.to(meshPosition, { x: this.originalX, y: this.originalY, duration: 0.2 * this.index })
   }
 }

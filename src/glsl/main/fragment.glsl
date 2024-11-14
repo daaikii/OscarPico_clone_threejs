@@ -1,3 +1,5 @@
+#include <myCommon>;
+
 uniform sampler2D uTexture;
 uniform sampler2D uTexture2;
 uniform float uProgress;
@@ -5,7 +7,6 @@ uniform float uMosaicRatio;
 uniform float uAmplitude;
 uniform float uDisplay;
 uniform float uAspect;
-uniform float uBaseAspect;
 uniform float uTime;
 varying vec2 vUv;
 
@@ -39,10 +40,10 @@ float hash(vec2 p) {
 void main() {
   vec2 newUV = vUv;
   newUV.x-=0.5;
-  newUV.x /= uBaseAspect;
+  newUV.x /= baseAspect;
   
   if (uAspect > 1.0) {
-    newUV.x *=uBaseAspect;
+    newUV.x *=baseAspect;
   }
 
   newUV.x+=0.5;
